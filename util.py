@@ -104,11 +104,21 @@ def util_update_price(agentIns, priceIns):
     pro_down = -min(0, beta * ed)
     rnd_num=random.uniform(0,1)
     if ed>0 and pro_up>rnd_num:
-        newprice = priceIns.price + 0.001 * priceIns.price
-        priceIns.update_price(newprice)
+        price_change=0.001 * priceIns.price
+        priceIns.price_queue.append(price_change)
+        # newprice = priceIns.price + 0.001 * priceIns.price
+        # priceIns.update_price(newprice)
     elif ed<0 and pro_down>rnd_num:
-        newprice = priceIns.price - 0.001 * priceIns.price
-        priceIns.update_price(newprice)
+        price_change = -0.001 * priceIns.price
+        priceIns.price_queue.append(price_change)
+        # newprice = priceIns.price - 0.001 * priceIns.price
+        # priceIns.update_price(newprice)
     else:
-        newprice = priceIns.price
-        priceIns.update_price(newprice)
+        price_change = 0
+        priceIns.price_queue.append(price_change)
+        # newprice = priceIns.price
+        # priceIns.update_price(newprice)
+    priceIns.price_queue.popleft()
+    # print(priceIns.price_queue)
+    # return price_change
+    # priceIns.price_dot=price_change/t_inc

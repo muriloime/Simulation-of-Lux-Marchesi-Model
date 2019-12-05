@@ -11,11 +11,12 @@ class Price:
         self.t_inc_price=t_inc_price
 
 
-    def update_price(self,new_price):
-        self.price=new_price
-        self.price_dot= (self.price - self.price_queue.popleft()) / self.t_inc_price
-        self.price_queue.append(new_price)
-
+    def update_price(self):
+        newprice=self.price+(sum(self.price_queue))/(len(self.price_queue))
+        self.price_dot= (newprice-self.price) / self.t_inc_price
+        # self.price_queue.popleft()
+        # self.price_queue.append(new_price)
+        self.price=newprice
 
     def update_price_fund(self):
         rnd_num=random.gauss(0,0.005)

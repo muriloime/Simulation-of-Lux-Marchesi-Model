@@ -10,6 +10,7 @@ import numpy as np
 random.seed(324)
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--obs", type=int, default=5000, help='Observation times')
     parser.add_argument("--N", type=float, default=500.0, help='Determine the number of the agents')
     parser.add_argument("--v_1", type=float, default=2.0, help='Frequency of reval (Between noise trader)')
     parser.add_argument("--alpha_1", type=float, default=0.6, help='Importance of flows.')
@@ -49,19 +50,20 @@ if __name__ == "__main__":
     Agents_list=[]
     agents_min = N * 0.008
 
-    for i in range(8):
+    for i in range(int(agents_min)):
         Agents_list.append(Agents("OPTIMIST"))
         Agents().add_opt()
-    for i in range(8):
+    for i in range(int(agents_min)):
         Agents_list.append(Agents("PESSIMIST"))
         Agents().add_pes()
-    for i in range(484):
+    for i in range(int(N-2*agents_min)):
         Agents_list.append(Agents("FUNDAMENTALIST"))
         Agents().add_fund()
-    opt_num_log=np.array([8])
-    pes_num_log=np.array([8])
-    fund_num_log=np.array([484])
-    chart_index_log=np.array([16/484])
+    opt_num_log=np.array([agents_min])
+    pes_num_log=np.array([agents_min])
+    fund_num_log=np.array([N-2*agents_min])
+    chart_index_log=np.array([agents_min*2/N])
+    opinion_index=np.array([Agents().get_flow_noise()])
 
 
     """Variable Parameters"""
@@ -69,7 +71,7 @@ if __name__ == "__main__":
     price_fund = args.price_fund
 
     """To store the price history for calculating the avg of interval of 0.2"""
-    price_queue = deque([price for i in range(int(t_inc_price / t_inc))])
+    price_queue = deque([0 for i in range(int(t_inc_price / t_inc))])
     price_dot = 0 # Initialized as zero, calculate by (price-deque.popleft())/t_inc_price
     price_elem=Price(price,price_fund,price_dot,price_queue,t_inc_price)
     price_log=np.array([price])
@@ -80,11 +82,10 @@ if __name__ == "__main__":
     noise_cash = 0
     fund_cash = 0
 
-    Observation_times=100
-    steps=500
-
-    for i in range(Observation_times):
-        for j in range(steps):
+    Observation_times=args.obs
+    steps=int(1/t_inc)
+    for obs in range(Observation_times):
+        for step in range(steps):
             for agent in Agents_list:
                 rnd_num = random.uniform(0,1)
                 if agent.get_state()=="FUNDAMENTALIST" and Agents().agents_fund>agents_min:
@@ -131,9 +132,9 @@ if __name__ == "__main__":
             ed=edc+edf
             fund_share+=edf
             noise_share+=edc
-
-            util_update_price(Agents_list[0],price_elem)
-            price_elem.update_price_fund()
+            util_update_price(Agents_list[0], price_elem)
+            # if (step+1)%(int(t_inc_price / t_inc))==0:
+            price_elem.update_price()
             noise_cash-=edc*price_elem.price
             fund_cash-=edf*price_elem.price
 
@@ -144,24 +145,69 @@ if __name__ == "__main__":
                 else:
                     agent.cash=noise_cash
                     agent.share=noise_share
-
+        price_elem.update_price_fund()
         price_log=np.append(price_log,price_elem.price)
         price_fund_log=np.append(price_fund_log,price_elem.price_fund)
         opt_num_log=np.append(opt_num_log,Agents().agents_opt)
         pes_num_log=np.append(pes_num_log,Agents().agents_pes)
         chart_index_log=np.append(chart_index_log,Agents().agents_noise/Agents().count_all)
         fund_num_log=np.append(fund_num_log,Agents().agents_fund)
-    # x_axis=np.linspace(0,5000)
-    plt.plot(price_log,label='Price')
-    plt.plot(price_fund_log,label='Fundamental value')
-    plt.legend(loc="upper left")
-    plt.figure()
-    plt.plot(opt_num_log,label='OPTIMIST')
-    plt.plot(pes_num_log,label="PESSIMIST")
-    plt.plot(fund_num_log,label="FUNDAMENTALIST")
-    plt.legend(loc="upper left")
-    plt.figure()
-    plt.plot(chart_index_log,label='Chart Index')
-    plt.legend(loc="upper left")
-    plt.show()
+        opinion_index=np.append(opinion_index,Agents().get_flow_noise())
 
+    """Save Numpy to file"""
+    data=[price_log,
+          price_fund_log,
+          opt_num_log,
+          pes_num_log,
+          chart_index_log,
+          fund_num_log,
+          opinion_index]
+    np.savez('data_5000_times.npz', *data)
+    """Plot"""
+
+    plt.figure(figsize=(20, 6))
+    plt.plot(price_log,linewidth = '0.5',label='Price')
+    plt.legend(loc="upper left")
+    plt.xlim(0, Observation_times)
+
+    plt.figure(figsize=(20, 6))
+    plt.plot(price_fund_log,linewidth = '0.5',label='Fundamental value')
+    plt.legend(loc="upper left")
+    plt.xlim(0, Observation_times)
+
+    plt.figure(figsize=(20, 6))
+    plt.plot(price_log,linewidth = '0.5',label='Price')
+    plt.plot(price_fund_log,linewidth = '0.5',label='Fundamental value')
+    plt.legend(loc="upper left")
+    plt.xlim(0, Observation_times)
+
+    plt.figure(figsize=(20, 6))
+    plt.plot(opt_num_log,linewidth = '0.5',label='OPTIMIST')
+    plt.plot(pes_num_log,linewidth = '0.5',label="PESSIMIST")
+    plt.plot(fund_num_log,linewidth = '0.5',label="FUNDAMENTALIST")
+    plt.legend(loc="upper left")
+    plt.xlim(0, Observation_times)
+
+    plt.figure(figsize=(20, 6))
+    plt.plot(chart_index_log,linewidth = '0.5',label='Chart Index')
+    plt.legend(loc="upper left")
+    plt.xlim(0, Observation_times)
+    plt.ylim(bottom=0)
+
+    plt.figure(figsize=(20,6))
+    plt.plot(opinion_index,linewidth = '0.5',label='Opinion Index')
+    plt.legend(loc="upper left")
+    plt.xlim(0, Observation_times)
+
+    plt.figure(figsize=(20,6))
+    plt.plot(np.diff(np.log(price_log)),color='k',linewidth = '0.5',label='Log changes of price')
+    plt.legend(loc="upper left")
+    plt.xlim(0, Observation_times)
+
+
+    plt.figure(figsize=(20,6))
+    plt.plot(np.diff(np.log(price_fund_log)),color='k', linewidth = '0.5',label='Log changes of Fundamental value')
+    plt.legend(loc="upper left")
+    plt.xlim(0, Observation_times)
+
+    plt.show()
