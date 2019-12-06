@@ -49,20 +49,22 @@ if __name__ == "__main__":
     """Agent initialization"""
     Agents_list=[]
     agents_min = N * 0.008
-
-    for i in range(int(agents_min)):
+    opt_init=agents_min
+    pes_init=agents_min
+    fund_init=int(N-opt_init-pes_init)
+    for i in range(opt_init):
         Agents_list.append(Agents("OPTIMIST"))
         Agents().add_opt()
-    for i in range(int(agents_min)):
+    for i in range(pes_init):
         Agents_list.append(Agents("PESSIMIST"))
         Agents().add_pes()
-    for i in range(int(N-2*agents_min)):
+    for i in range(fund_init):
         Agents_list.append(Agents("FUNDAMENTALIST"))
         Agents().add_fund()
-    opt_num_log=np.array([agents_min])
-    pes_num_log=np.array([agents_min])
-    fund_num_log=np.array([N-2*agents_min])
-    chart_index_log=np.array([agents_min*2/N])
+    opt_num_log=np.array([opt_init])
+    pes_num_log=np.array([pes_init])
+    fund_num_log=np.array([fund_init])
+    chart_index_log=np.array([(opt_init+pes_init)/N])
     opinion_index=np.array([Agents().get_flow_noise()])
 
 
@@ -162,7 +164,7 @@ if __name__ == "__main__":
           chart_index_log,
           fund_num_log,
           opinion_index]
-    np.savez('data_5000_times.npz', *data)
+    np.savez('data_5000_random_init_agents.npz', *data)
     """Plot"""
 
     plt.figure(figsize=(20, 6))
