@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("--v_2", type=float, default=0.6, help='Frequency of reval (Between noise and fundamentalists)')
     parser.add_argument("--alpha_3", type=float, default=1, help='Sensitivity to profit differential')
     parser.add_argument("--R", type=float, default=0.0004, help='Average return receive by the holder of other asset')
-    parser.add_argument("--s", type=float, default=0.75, help='Discount of profit of the fundamentalists')
+    parser.add_argument("--s", type=float, default=0.65, help='Discount of profit of the fundamentalists')
     parser.add_argument("--t_c", type=float, default=0.001, help='Average trading volume per transaction')
     parser.add_argument("--gamma", type=float, default=0.01, help='Strengh of reaction')
     parser.add_argument("--beta", type=float, default=4, help='Parameter for the price adjustment speed')
@@ -49,8 +49,8 @@ if __name__ == "__main__":
     """Agent initialization"""
     Agents_list=[]
     agents_min = N * 0.008
-    opt_init=agents_min
-    pes_init=agents_min
+    opt_init=int(agents_min)
+    pes_init=int(agents_min)
     fund_init=int(N-opt_init-pes_init)
     for i in range(opt_init):
         Agents_list.append(Agents("OPTIMIST"))
@@ -164,7 +164,7 @@ if __name__ == "__main__":
           chart_index_log,
           fund_num_log,
           opinion_index]
-    np.savez('data_5000_random_init_agents.npz', *data)
+    np.savez('data_5000_s_t_65.npz', *data)
     """Plot"""
 
     plt.figure(figsize=(20, 6))
