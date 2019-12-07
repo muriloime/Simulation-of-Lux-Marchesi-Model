@@ -17,64 +17,109 @@ dic = {"price_log":0,
 
 with np.load("data_5000_times.npz") as data:
     fetch = [data[key] for key in data]
+def llplot(price,price_fund,lag,marker):
+        # fig, ax = plt.subplots(1, 1)
+        # ax.invert_xaxis()
 
-'''Lag=1'''
-fig,ax=plt.subplots(1,1)
+        price_log_1 = np.diff(np.log(price), n=lag)
+        price_log_1 = np.absolute(1 / np.std(price_log_1) * price_log_1)
+
+        price_fund_1 = np.diff(np.log(price_fund), n=lag)
+        price_fund_1 = np.absolute(1 / np.std(price_fund_1) * price_fund_1)
+        # sort by Price, make pf order correspond to the sorted price
+        s_price_log_1, new_price_fund_1 = zip(*sorted(zip(price_log_1, price_fund_1)))
+        # collect price by sorted bins of price
+        counts, bin_edges = np.histogram(price_log_1, bins=s_price_log_1, normed=True)
+        # counts multiply group distance
+        pdf = counts * np.diff(bin_edges)
+
+        # pdf is correspond to the order of s_price_fund_1, now sort by pf
+        s_price_fund_1, new_pdf = zip(*sorted(zip(new_price_fund_1, pdf), reverse=True))
+        # counts=1-counts
+        cdf = np.cumsum(new_pdf)
+
+        # plt.plot(cdf)
+
+        plt.loglog(s_price_fund_1, 1 - cdf, marker, markersize=3, label='Lag={}'.format(lag))
+
+fig, ax = plt.subplots(1, 1)
 ax.invert_xaxis()
-
-price_log_1=np.diff(np.log(fetch[dic["price_log"]]),n=1)
-price_log_1=np.absolute(1/np.std(price_log_1)*price_log_1)
-
-price_fund_1=np.diff(np.log(fetch[dic["price_fund_log"]]),n=1)
-price_fund_1=np.absolute(1/np.std(price_fund_1)*price_fund_1)
-
-counts, bin_edges = np.histogram(price_log_1,bins=sorted(price_fund_1))
-counts=1-counts/sum(counts)
-cdf = np.cumsum(counts)
-plt.loglog(bin_edges[1:], cdf/cdf[-1],'+',markersize=3,label='Lag=1')
+price=fetch[dic["price_log"]]
+price_fund=fetch[dic["price_fund_log"]]
+llplot(price,price_fund,1,'+')
+llplot(price,price_fund,5,'^')
+llplot(price,price_fund,15,'*')
+llplot(price,price_fund,25,'1')
 plt.legend(loc="upper right")
-
-
+# plt.xlim(right=1e-2)
+plt.ylim(bottom=1e-5)
+'''Lag=1'''
+# fig,ax=plt.subplots(1,1)
+# ax.invert_xaxis()
 #
-"""lag = 5"""
-price_log_1=np.diff(np.log(fetch[dic["price_log"]]),n=5)
-price_log_1=np.absolute(1/np.std(price_log_1)*price_log_1)
-
-price_fund_1=np.diff(np.log(fetch[dic["price_fund_log"]]),n=5)
-price_fund_1=np.absolute(1/np.std(price_fund_1)*price_fund_1)
-
-counts, bin_edges = np.histogram(price_log_1,bins=sorted(price_fund_1))
-counts=1-counts/sum(counts)
-cdf = np.cumsum(counts)
-plt.loglog(bin_edges[1:], cdf/cdf[-1],'^',markersize=3,label='Lag=5')
-plt.legend(loc="upper right")
-
-"""lag = 15"""
-price_log_1=np.diff(np.log(fetch[dic["price_log"]]),n=15)
-price_log_1=np.absolute(1/np.std(price_log_1)*price_log_1)
-
-price_fund_1=np.diff(np.log(fetch[dic["price_fund_log"]]),n=15)
-price_fund_1=np.absolute(1/np.std(price_fund_1)*price_fund_1)
-
-counts, bin_edges = np.histogram(price_log_1,bins=sorted(price_fund_1))
-counts=1-counts/sum(counts)
-cdf = np.cumsum(counts)
-plt.loglog(bin_edges[1:], cdf/cdf[-1],'*',markersize=3,label='Lag=15')
-plt.legend(loc="upper right")
+# price_log_1=np.diff(np.log(fetch[dic["price_log"]]),n=1)
+# price_log_1=np.absolute(1/np.std(price_log_1)*price_log_1)
+#
+# price_fund_1=np.diff(np.log(fetch[dic["price_fund_log"]]),n=1)
+# price_fund_1=np.absolute(1/np.std(price_fund_1)*price_fund_1)
+# # sort by Price, make pf order correspond to the sorted price
+# s_price_log_1,new_price_fund_1=zip(*sorted(zip(price_log_1,price_fund_1)))
+# # collect price by sorted bins of price
+# counts, bin_edges = np.histogram(price_log_1,bins=s_price_log_1, normed=True)
+# # counts multiply group distance
+# pdf=counts * np.diff(bin_edges)
+#
+# # pdf is correspond to the order of s_price_fund_1, now sort by pf
+# s_price_fund_1,new_pdf=zip(*sorted(zip(new_price_fund_1,pdf),reverse=True))
+# # counts=1-counts
+# cdf = np.cumsum(new_pdf)
+#
+# # plt.plot(cdf)
+# print(cdf[-1])
+# plt.loglog(s_price_fund_1, 1-cdf,'+',markersize=3,label='Lag=1')
+# plt.legend(loc="upper right")
 
 
-"""lag = 25"""
-price_log_1=np.diff(np.log(fetch[dic["price_log"]]),n=25)
-price_log_1=np.absolute(1/np.std(price_log_1)*price_log_1)
-
-price_fund_1=np.diff(np.log(fetch[dic["price_fund_log"]]),n=25)
-price_fund_1=np.absolute(1/np.std(price_fund_1)*price_fund_1)
-
-counts, bin_edges = np.histogram(price_log_1,bins=sorted(price_fund_1))
-counts=1-counts/sum(counts)
-cdf = np.cumsum(counts)
-plt.loglog(bin_edges[1:], cdf/cdf[-1],'1',markersize=3,label='Lag=25')
-plt.legend(loc="upper right")
+# #
+# """lag = 5"""
+# price_log_1=np.diff(np.log(fetch[dic["price_log"]]),n=5)
+# price_log_1=np.absolute(1/np.std(price_log_1)*price_log_1)
+#
+# price_fund_1=np.diff(np.log(fetch[dic["price_fund_log"]]),n=5)
+# price_fund_1=np.absolute(1/np.std(price_fund_1)*price_fund_1)
+#
+# counts, bin_edges = np.histogram(price_log_1,bins=sorted(price_fund_1))
+# counts=1-counts/sum(counts)
+# cdf = np.cumsum(counts)
+# plt.loglog(bin_edges[1:], cdf/cdf[-1],'^',markersize=3,label='Lag=5')
+# plt.legend(loc="upper right")
+#
+# """lag = 15"""
+# price_log_1=np.diff(np.log(fetch[dic["price_log"]]),n=15)
+# price_log_1=np.absolute(1/np.std(price_log_1)*price_log_1)
+#
+# price_fund_1=np.diff(np.log(fetch[dic["price_fund_log"]]),n=15)
+# price_fund_1=np.absolute(1/np.std(price_fund_1)*price_fund_1)
+#
+# counts, bin_edges = np.histogram(price_log_1,bins=sorted(price_fund_1))
+# counts=1-counts/sum(counts)
+# cdf = np.cumsum(counts)
+# plt.loglog(bin_edges[1:], cdf/cdf[-1],'*',markersize=3,label='Lag=15')
+# plt.legend(loc="upper right")
+#
+#
+# """lag = 25"""
+# price_log_1=np.diff(np.log(fetch[dic["price_log"]]),n=25)
+# price_log_1=np.absolute(1/np.std(price_log_1)*price_log_1)
+#
+# price_fund_1=np.diff(np.log(fetch[dic["price_fund_log"]]),n=25)
+# price_fund_1=np.absolute(1/np.std(price_fund_1)*price_fund_1)
+#
+# counts, bin_edges = np.histogram(price_log_1,bins=sorted(price_fund_1))
+# counts=1-counts/sum(counts)
+# cdf = np.cumsum(counts)
+# plt.loglog(bin_edges[1:], cdf/cdf[-1],'1',markersize=3,label='Lag=25')
+# plt.legend(loc="upper right")
 """"""
 
 
