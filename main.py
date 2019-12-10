@@ -18,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("--v_2", type=float, default=0.6, help='Frequency of reval (Between noise and fundamentalists)')
     parser.add_argument("--alpha_3", type=float, default=1, help='Sensitivity to profit differential')
     parser.add_argument("--R", type=float, default=0.0004, help='Average return receive by the holder of other asset')
-    parser.add_argument("--s", type=float, default=0.65, help='Discount of profit of the fundamentalists')
+    parser.add_argument("--s", type=float, default=0.75, help='Discount of profit of the fundamentalists')
     parser.add_argument("--t_c", type=float, default=0.001, help='Average trading volume per transaction')
     parser.add_argument("--gamma", type=float, default=0.01, help='Strengh of reaction')
     parser.add_argument("--beta", type=float, default=4, help='Parameter for the price adjustment speed')
